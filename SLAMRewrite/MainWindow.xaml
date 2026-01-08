@@ -6,8 +6,8 @@
         xmlns:local="clr-namespace:SLAMRewrite"
         mc:Ignorable="d"
         Title="MainWindow"
-        Height="400"
-        Width="800"
+        Height="600"
+        Width="1200"
         ResizeMode="CanResizeWithGrip">
     <Grid>
         <Grid.RowDefinitions>
