@@ -21,11 +21,14 @@ public partial class MainWindow : Window
 {
     private readonly Dictionary<string, InMemoryAudioFile> _audioTracksDictionary = [];
     private readonly MediaPlayer _mediaPlayer = new();
+
     private Uri? _selectedUri = null;
+    private SongStatus _songStatus = SongStatus.Stopped;
 
     public MainWindow()
     {
         InitializeComponent();
+        _mediaPlayer.MediaEnded += (_, _) => { _songStatus = SongStatus.Stopped; };
     }
 
     private void ImportButton_OnClick(object sender, RoutedEventArgs e) =>
@@ -56,11 +59,63 @@ public partial class MainWindow : Window
     private void PlayButton_OnClick(object sender, RoutedEventArgs e) =>
         HandleExceptionsWithMessageBox(() =>
         {
-            if (_selectedUri is null)
-                return;
+            switch (_songStatus)
+            {
+                // load song then play
+                case SongStatus.Stopped:
+                    if (_selectedUri is not null)
+                    {
+                        _mediaPlayer.Open(_selectedUri);
+                        _mediaPlayer.Play();
+                        _songStatus = SongStatus.Playing;
+                    }
 
-            _mediaPlayer.Open(_selectedUri);
-            _mediaPlayer.Play();
+                    break;
+
+                // play song
+                case SongStatus.Paused:
+                    _mediaPlayer.Play();
+                    _songStatus = SongStatus.Playing;
+                    break;
+
+                // ignore input ?
+                case SongStatus.Playing:
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException(
+                        nameof(_songStatus),
+                        _songStatus,
+                        "Check cases on _songStatus");
+            }
+        });
+
+    private void PauseButton_OnClick(object sender, RoutedEventArgs e) =>
+        HandleExceptionsWithMessageBox(() =>
+        {
+            switch (_songStatus)
+            {
+                // ignore input
+                case SongStatus.Stopped:
+                    break;
+
+                // ignore input
+                case SongStatus.Paused:
+                    break;
+
+                // play paused song
+                case SongStatus.Playing:
+                    _mediaPlayer.Pause();
+                    _songStatus = SongStatus.Paused;
+                    break;
+
+                // ???
+                default:
+                    throw new ArgumentOutOfRangeException(
+                        nameof(_songStatus),
+                        _songStatus,
+                        "Check cases on _songStatus");
+            }
         });
 
     private void AudioTracks_OnSelectionChanged(object sender, SelectionChangedEventArgs e) =>
@@ -68,13 +123,12 @@ public partial class MainWindow : Window
         {
             // TODO: working with only first selection here
             var firstSelection = e.AddedItems[0] as string;
+
             // TODO: is checking for firstSelection being null necessary
             var fullFilePath = _audioTracksDictionary[firstSelection!].FullFilePath;
+
             _selectedUri = new Uri(fullFilePath);
         });
-
-    private void PauseButton_OnClick(object sender, RoutedEventArgs e) =>
-        HandleExceptionsWithMessageBox(() => _mediaPlayer.Pause());
 
     private static void HandleExceptionsWithMessageBox(Action action)
     {
@@ -90,5 +144,14 @@ public partial class MainWindow : Window
                 button: MessageBoxButton.OK,
                 icon: MessageBoxImage.Error);
         }
+    }
+
+    private void SkipToNextButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        HandleExceptionsWithMessageBox(() =>
+        {
+            _mediaPlayer.Stop();
+            _songStatus = SongStatus.Stopped;
+        });
     }
 }

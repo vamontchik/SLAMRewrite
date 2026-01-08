@@ -35,6 +35,13 @@
                 Width="100"
                 Height="50"
                 Click="PauseButton_OnClick" />
+            <Button
+                Name="SkipToNextButton"
+                Content="SkipToNext"
+                Width="100"
+                Height="50"
+                Click="SkipToNextButton_OnClick"
+                />
         </WrapPanel>
         <ListView
             Name="AudioTracksListView"
