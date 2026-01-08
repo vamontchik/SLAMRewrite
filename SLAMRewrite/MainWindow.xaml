@@ -14,8 +14,8 @@
             <RowDefinition></RowDefinition>
             <RowDefinition></RowDefinition>
         </Grid.RowDefinitions>
-        <WrapPanel 
-            Grid.Row="0" 
+        <WrapPanel
+            Grid.Row="0"
             HorizontalAlignment="Right">
             <Button
                 Name="ImportButton"
@@ -32,19 +32,13 @@
             <Button
                 Name="PauseButton"
                 Content="Pause"
-                Width="100" 
-                Height="50"
-                Click="PauseButton_OnClick"/>
-            <Button
-                Name="StopButton"
-                Content="Stop"
                 Width="100"
                 Height="50"
-                Click="StopButton_OnClick" />
+                Click="PauseButton_OnClick" />
         </WrapPanel>
         <ListView
             Name="AudioTracksListView"
-            Grid.Row="1" 
-            SelectionChanged="AudioTracks_OnSelectionChanged"/>
+            Grid.Row="1"
+            SelectionChanged="AudioTracks_OnSelectionChanged" />
     </Grid>
 </Window>

@@ -42,7 +42,8 @@ public partial class MainWindow : Window
 
             var fullFilePath = openFileDialog.FileName;
             var onlyFileName = openFileDialog.SafeFileName;
-            var musicFileContents = File.ReadAllBytes(fullFilePath); // TODO: async version with proper exception handling
+            // TODO: async version with proper exception handling
+            var musicFileContents = File.ReadAllBytes(fullFilePath);
 
             _audioTracksDictionary[onlyFileName] = new InMemoryAudioFile(
                 FileName: onlyFileName,
@@ -53,9 +54,6 @@ public partial class MainWindow : Window
 
     private void PlayButton_OnClick(object sender, RoutedEventArgs e) =>
         HandleExceptionsWithMessageBox(() => _mediaPlayer.Play());
-
-    private void StopButton_OnClick(object sender, RoutedEventArgs e) =>
-        HandleExceptionsWithMessageBox(() => _mediaPlayer.Stop());
 
     private void AudioTracks_OnSelectionChanged(object sender, SelectionChangedEventArgs e) =>
         HandleExceptionsWithMessageBox(() =>
