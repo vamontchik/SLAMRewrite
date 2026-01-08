@@ -5,8 +5,46 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SLAMRewrite"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow"
+        Height="400"
+        Width="800"
+        ResizeMode="CanResizeWithGrip">
     <Grid>
-
+        <Grid.RowDefinitions>
+            <RowDefinition></RowDefinition>
+            <RowDefinition></RowDefinition>
+        </Grid.RowDefinitions>
+        <WrapPanel 
+            Grid.Row="0" 
+            HorizontalAlignment="Right">
+            <Button
+                Name="ImportButton"
+                Content="Add"
+                Width="100"
+                Height="50"
+                Click="ImportButton_OnClick" />
+            <Button
+                Name="PlayButton"
+                Content="Play"
+                Width="100"
+                Height="50"
+                Click="PlayButton_OnClick" />
+            <Button
+                Name="PauseButton"
+                Content="Pause"
+                Width="100" 
+                Height="50"
+                Click="PauseButton_OnClick"/>
+            <Button
+                Name="StopButton"
+                Content="Stop"
+                Width="100"
+                Height="50"
+                Click="StopButton_OnClick" />
+        </WrapPanel>
+        <ListView
+            Name="AudioTracksListView"
+            Grid.Row="1" 
+            SelectionChanged="AudioTracks_OnSelectionChanged"/>
     </Grid>
 </Window>
