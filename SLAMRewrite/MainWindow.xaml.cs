@@ -21,6 +21,7 @@ public partial class MainWindow : Window
 {
     private readonly Dictionary<string, InMemoryAudioFile> _audioTracksDictionary = [];
     private readonly MediaPlayer _mediaPlayer = new();
+    private Uri? _selectedUri = null;
 
     public MainWindow()
     {
@@ -53,19 +54,23 @@ public partial class MainWindow : Window
         });
 
     private void PlayButton_OnClick(object sender, RoutedEventArgs e) =>
-        HandleExceptionsWithMessageBox(() => _mediaPlayer.Play());
+        HandleExceptionsWithMessageBox(() =>
+        {
+            if (_selectedUri is null)
+                return;
+
+            _mediaPlayer.Open(_selectedUri);
+            _mediaPlayer.Play();
+        });
 
     private void AudioTracks_OnSelectionChanged(object sender, SelectionChangedEventArgs e) =>
         HandleExceptionsWithMessageBox(() =>
         {
-            // TODO: working with only first selection here...
-            if (e.AddedItems[0] is not string fileNameOfSelection)
-            {
-                throw new Exception("Selected file with `null` as the file name");
-            }
-
-            var selectedTrack = _audioTracksDictionary[fileNameOfSelection];
-            _mediaPlayer.Open(new Uri(selectedTrack.FullFilePath));
+            // TODO: working with only first selection here
+            var firstSelection = e.AddedItems[0] as string;
+            // TODO: is checking for firstSelection being null necessary
+            var fullFilePath = _audioTracksDictionary[firstSelection!].FullFilePath;
+            _selectedUri = new Uri(fullFilePath);
         });
 
     private void PauseButton_OnClick(object sender, RoutedEventArgs e) =>
