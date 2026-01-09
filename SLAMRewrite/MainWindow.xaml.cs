@@ -2,7 +2,6 @@
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Win32;
-using NAudio.CoreAudioApi;
 using SLAMRewrite.DataObjects;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
