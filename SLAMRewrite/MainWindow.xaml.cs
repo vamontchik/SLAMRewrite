@@ -61,20 +61,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private static int FindDefaultDeviceNumber()
     {
-        const string deviceNameSearchString = "Realtek";
-        var enumerator = new MMDeviceEnumerator();
-        var i = 0;
-        foreach (var device in enumerator.EnumerateAudioEndPoints(DataFlow.Capture, DeviceState.Active))
-        {
-            if (device.DeviceFriendlyName.Contains(deviceNameSearchString))
-            {
-                return i;
-            }
-
-            ++i;
-        }
-
-        return -1;
+        return 0;
     }
 
     private void ImportButton_OnClick(object _, RoutedEventArgs _2) =>
