@@ -1,10 +1,9 @@
 ﻿using System.ComponentModel;
-using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 using Microsoft.Win32;
 using SLAMRewrite.DataObjects;
+using NAudio.Wave;
 
 namespace SLAMRewrite;
 
@@ -14,11 +13,12 @@ namespace SLAMRewrite;
 public partial class MainWindow : Window, INotifyPropertyChanged
 {
     private readonly Dictionary<string, InMemoryAudioFile> _audioTracksDictionary = [];
-    private readonly MediaPlayer _mediaPlayer = new();
+    private string? _selectedTrack;
+    private readonly int _deviceNumber;
+    private AudioFileReader? _audioFileReader;
+    private WaveOutEvent? _outputDevice;
 
-    private Uri? _selectedUri = null;
-
-    public event PropertyChangedEventHandler? PropertyChanged = null;
+    public event PropertyChangedEventHandler? PropertyChanged;
 
     public SongStatus SongStatus
     {
@@ -34,7 +34,23 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         DataContext = this;
         InitializeComponent();
-        _mediaPlayer.MediaEnded += (_, _) => SongStatus = SongStatus.Stopped;
+        _deviceNumber = FindDeviceNumber();
+    }
+
+    private static int FindDeviceNumber()
+    {
+        const string deviceNameSearchString = "CABLE Input";
+
+        for (var i = 0; i < WaveOut.DeviceCount; i++)
+        {
+            var capabilities = WaveOut.GetCapabilities(i);
+            if (capabilities.ProductName.Contains(deviceNameSearchString))
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     private void ImportButton_OnClick(object _, RoutedEventArgs _2) =>
@@ -52,13 +68,10 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
             var fullFilePath = openFileDialog.FileName;
             var onlyFileName = openFileDialog.SafeFileName;
-            // TODO: async version with proper exception handling
-            var musicFileContents = File.ReadAllBytes(fullFilePath);
 
             _audioTracksDictionary[onlyFileName] = new InMemoryAudioFile(
                 FileName: onlyFileName,
-                FullFilePath: fullFilePath,
-                Bytes: musicFileContents);
+                FullFilePath: fullFilePath);
             AudioTracksListView.Items.Add(onlyFileName);
         });
 
@@ -69,10 +82,10 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             {
                 // load song then play
                 case SongStatus.Stopped:
-                    if (_selectedUri is not null)
+                    if (_selectedTrack is not null)
                     {
-                        _mediaPlayer.Open(_selectedUri);
-                        _mediaPlayer.Play();
+                        OpenAudioStream();
+                        PlayAudioStream();
                         SongStatus = SongStatus.Playing;
                     }
 
@@ -80,7 +93,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
                 // play paused song
                 case SongStatus.Paused:
-                    _mediaPlayer.Play();
+                    PlayAudioStream();
                     SongStatus = SongStatus.Playing;
                     break;
 
@@ -101,7 +114,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         {
             if (SongStatus is not SongStatus.Playing)
                 return;
-            _mediaPlayer.Pause();
+            PauseAudioStream();
             SongStatus = SongStatus.Paused;
         });
 
@@ -112,9 +125,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             var firstSelection = e.AddedItems[0] as string;
 
             // TODO: is checking for firstSelection being null necessary
-            var fullFilePath = _audioTracksDictionary[firstSelection!].FullFilePath;
-
-            _selectedUri = new Uri(fullFilePath);
+            _selectedTrack = _audioTracksDictionary[firstSelection!].FullFilePath;
         });
 
     private static void HandleExceptionsWithMessageBox(Action action)
@@ -137,8 +148,61 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         HandleExceptionsWithMessageBox(() =>
         {
-            _mediaPlayer.Stop();
+            StopAudioStream();
             SongStatus = SongStatus.Stopped;
+        });
+    }
+
+    private void OpenAudioStream()
+    {
+        HandleExceptionsWithMessageBox(() =>
+        {
+            if (_audioFileReader is not null)
+                return;
+
+            _audioFileReader = new AudioFileReader(_selectedTrack);
+        });
+    }
+
+    private void PlayAudioStream()
+    {
+        HandleExceptionsWithMessageBox(() =>
+        {
+            if (_audioFileReader is null)
+                return;
+
+            if (_outputDevice is null)
+            {
+                _outputDevice = new WaveOutEvent { DeviceNumber = _deviceNumber };
+                _outputDevice.Init(_audioFileReader);
+                _outputDevice.PlaybackStopped += (_, _) => SongStatus = SongStatus.Stopped;
+            }
+
+            _outputDevice.Play();
+        });
+    }
+
+    private void PauseAudioStream()
+    {
+        HandleExceptionsWithMessageBox(() =>
+        {
+            if (_outputDevice is null)
+                return;
+
+            _outputDevice.Pause();
+        });
+    }
+
+    private void StopAudioStream()
+    {
+        HandleExceptionsWithMessageBox(() =>
+        {
+            _outputDevice?.Stop();
+            _outputDevice?.Dispose();
+            _audioFileReader?.Dispose();
+
+            _outputDevice = null;
+            _audioFileReader = null;
         });
     }
 }
