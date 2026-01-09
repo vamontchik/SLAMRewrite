@@ -14,7 +14,7 @@ namespace SLAMRewrite;
 /// </summary>
 public partial class MainWindow : Window, INotifyPropertyChanged
 {
-    private readonly Dictionary<string, InMemoryAudioFile> _audioTracksDictionary = [];
+    private readonly Dictionary<string, AudioFileInfo> _audioTracksDictionary = [];
     private string? _selectedTrack;
     private readonly int _outputToGameMicDeviceNumber;
     private readonly int _outputToDefaultDeviceNumber;
@@ -93,7 +93,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             var fullFilePath = openFileDialog.FileName;
             var onlyFileName = openFileDialog.SafeFileName;
 
-            _audioTracksDictionary[onlyFileName] = new InMemoryAudioFile(
+            _audioTracksDictionary[onlyFileName] = new AudioFileInfo(
                 FileName: onlyFileName,
                 FullFilePath: fullFilePath);
             AudioTracksListView.Items.Add(onlyFileName);
