@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SLAMRewrite"
         mc:Ignorable="d"
-        Title="MainWindow"
+        Title="SLAMRewrite"
         Height="600"
         Width="1200"
         ResizeMode="CanResizeWithGrip">
@@ -14,9 +14,16 @@
             <RowDefinition></RowDefinition>
             <RowDefinition></RowDefinition>
         </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+        </Grid.ColumnDefinitions>
         <WrapPanel
+            Name="WrapPanelForButtons"
             Grid.Row="0"
-            HorizontalAlignment="Right">
+            Grid.Column="1"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Center">
             <Button
                 Name="ImportButton"
                 Content="Add"
@@ -43,9 +50,19 @@
                 Click="SkipToNextButton_OnClick"
                 />
         </WrapPanel>
+        <TextBlock
+            Name="StatusTextBlock"
+            Grid.Row="0"
+            Grid.Column="0"
+            Text="{Binding SongStatus, StringFormat=Status: {0}}"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            FontSize="16"/>
         <ListView
             Name="AudioTracksListView"
             Grid.Row="1"
+            Grid.Column="0"
+            Grid.ColumnSpan="2"
             SelectionChanged="AudioTracks_OnSelectionChanged" />
     </Grid>
 </Window>
