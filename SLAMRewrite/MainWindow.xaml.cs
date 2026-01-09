@@ -175,6 +175,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             {
                 _outputDevice = new WaveOutEvent { DeviceNumber = _deviceNumber };
                 _outputDevice.Init(_audioFileReader);
+                _outputDevice.Volume = 0.1f;
+
                 _outputDevice.PlaybackStopped += (_, _) => SongStatus = SongStatus.Stopped;
             }
 
