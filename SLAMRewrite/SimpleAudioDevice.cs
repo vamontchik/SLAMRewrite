@@ -68,25 +68,25 @@ public abstract class SimpleAudioDevice
     }
 }
 
-public class SimpleAudioDeviceWithDirectVolume(int deviceNumber) : SimpleAudioDevice
+public class SimpleAudioDeviceWithDirectVolume(int deviceNumber, float defaultVolume) : SimpleAudioDevice
 {
     protected override WaveOutEvent CreateWaveEvent()
     {
         var waveOutEvent = new WaveOutEvent { DeviceNumber = deviceNumber };
         waveOutEvent.Init(AudioFileReader);
-        waveOutEvent.Volume = 0.25f;
+        waveOutEvent.Volume = defaultVolume;
         return waveOutEvent;
     }
 }
 
-public class SimpleAudioDeviceWithVolumeProvider(int deviceNumber) : SimpleAudioDevice
+public class SimpleAudioDeviceWithVolumeProvider(int deviceNumber, float defaultVolume) : SimpleAudioDevice
 {
     protected override WaveOutEvent CreateWaveEvent()
     {
         var waveOutEvent = new WaveOutEvent { DeviceNumber = deviceNumber };
         var volumeProvider = new VolumeSampleProvider(AudioFileReader.ToSampleProvider())
         {
-            Volume = 0.25f
+            Volume = defaultVolume
         };
         waveOutEvent.Init(volumeProvider);
         return waveOutEvent;

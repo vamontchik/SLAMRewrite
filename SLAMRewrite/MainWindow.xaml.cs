@@ -35,8 +35,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         InitializeComponent();
         DataContext = this;
-        _outputToGame = new SimpleAudioDeviceWithDirectVolume(FindGameDeviceNumber());
-        _outputToDefault = new SimpleAudioDeviceWithVolumeProvider(FindDefaultDeviceNumber());
+        _outputToGame = new SimpleAudioDeviceWithVolumeProvider(FindGameDeviceNumber(), defaultVolume: 0.1f);
+        _outputToDefault = new SimpleAudioDeviceWithVolumeProvider(FindDefaultDeviceNumber(), defaultVolume: 0.25f);
     }
 
     private static int FindGameDeviceNumber()
