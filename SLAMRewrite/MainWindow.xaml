@@ -18,44 +18,57 @@
             <ColumnDefinition></ColumnDefinition>
             <ColumnDefinition></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <WrapPanel
-            Name="WrapPanelForButtons"
+        <StackPanel
+            Name="AllButtonsStackPanel"
             Grid.Row="0"
             Grid.Column="1"
             VerticalAlignment="Center"
             HorizontalAlignment="Center">
-            <Button
-                Name="ImportButton"
-                Content="Add"
-                Width="100"
-                Height="50"
-                Click="ImportButton_OnClick" />
-            <Button
-                Name="PlayButton"
-                Content="Play"
-                Width="100"
-                Height="50"
-                Click="PlayButton_OnClick" />
-            <Button
-                Name="PauseButton"
-                Content="Pause"
-                Width="100"
-                Height="50"
-                Click="PauseButton_OnClick" />
-            <Button
-                Name="StopFlushButton"
-                Content="Stop/Flush"
-                Width="100"
-                Height="50"
-                Click="StopFlushButton_OnClick" />
-        </WrapPanel>
+            <WrapPanel
+                Name="WrapPanelForImportDelete">
+                <Button
+                    Name="ImportButton"
+                    Content="Add"
+                    Width="100"
+                    Height="50"
+                    Click="ImportButton_OnClick" />
+                <Button
+                    Name="DeleteButton"
+                    Content="Delete"
+                    Width="100"
+                    Height="50"
+                    Click="DeleteButton_OnClick" />
+            </WrapPanel>
+            <WrapPanel
+                Name="WrapPanelForPlayPauseStop">
+                <Button
+                    Name="PlayButton"
+                    Content="Play"
+                    Width="100"
+                    Height="50"
+                    Click="PlayButton_OnClick" />
+                <Button
+                    Name="PauseButton"
+                    Content="Pause"
+                    Width="100"
+                    Height="50"
+                    Click="PauseButton_OnClick" />
+                <Button
+                    Name="StopFlushButton"
+                    Content="Stop/Flush"
+                    Width="100"
+                    Height="50"
+                    Click="StopFlushButton_OnClick" />
+            </WrapPanel>
+        </StackPanel>
         <TextBlock
             Name="StatusTextBlock"
             Grid.Row="0"
             Grid.Column="0"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            FontSize="16">
+            FontSize="16"
+            TextWrapping="Wrap">
             <TextBlock.Text>
                 <MultiBinding StringFormat="{}Status: {0}&#x0a;Now Playing: {1}">
                     <Binding Path="SongStatus" />

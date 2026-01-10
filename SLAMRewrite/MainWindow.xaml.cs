@@ -57,6 +57,16 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private static int FindDefaultDeviceNumber() => 0;
 
+    private void AudioTracks_OnSelectionChanged(object _, SelectionChangedEventArgs e) =>
+        HandleExceptionsWithMessageBox(() =>
+        {
+            if (e.AddedItems.Count != 1)
+                return;
+
+            var selection = e.AddedItems[0] as string;
+            SelectedTrack = selection;
+        });
+
     private void ImportButton_OnClick(object _, RoutedEventArgs _2) =>
         HandleExceptionsWithMessageBox(() =>
         {
@@ -74,6 +84,18 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             AudioTracksListView.Items.Add(fullPath);
         });
 
+    private void DeleteButton_OnClick(object _, RoutedEventArgs _2)
+    {
+        HandleExceptionsWithMessageBox(() =>
+        {
+            if (SelectedTrack is null)
+                return;
+
+            AudioTracksListView.Items.Remove(SelectedTrack);
+            SelectedTrack = null;
+        });
+    }
+
     private void PlayButton_OnClick(object _, RoutedEventArgs _2) =>
         HandleExceptionsWithMessageBox(() =>
         {
@@ -82,6 +104,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
                 // load song then play
                 case SongStatus.Stopped:
                     OpenAudioStream();
+                    if (!_outputToGame.IsOpened || !_outputToDefault.IsOpened)
+                        break;
                     PlayAudioStream();
                     SongStatus = SongStatus.Playing;
                     break;
@@ -113,17 +137,12 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             SongStatus = SongStatus.Paused;
         });
 
-    private void AudioTracks_OnSelectionChanged(object _, SelectionChangedEventArgs e) =>
-        HandleExceptionsWithMessageBox(() =>
-        {
-            var selection = e.AddedItems[0] as string;
-            SelectedTrack = selection;
-        });
-
     private void StopFlushButton_OnClick(object _, RoutedEventArgs _2)
     {
         HandleExceptionsWithMessageBox(() =>
         {
+            if (SongStatus is SongStatus.Stopped)
+                return;
             StopAudioStream();
             SongStatus = SongStatus.Stopped;
         });
@@ -152,9 +171,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private void PlayAudioStream()
     {
-        if (_outputToGame.IsPlaying || _outputToDefault.IsPlaying)
-            return;
-
         _outputToGame.Play();
         _outputToDefault.Play();
 
@@ -164,12 +180,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private void PauseAudioStream()
     {
-        if (SelectedTrack is null)
-            return;
-
-        if (_outputToGame.IsPaused || _outputToDefault.IsPaused)
-            return;
-
         _outputToGame.Pause();
         _outputToDefault.Pause();
     }
