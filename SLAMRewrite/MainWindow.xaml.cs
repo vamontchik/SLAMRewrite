@@ -129,7 +129,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         });
     }
 
-    private void MenuItem_OnClick(object sender, RoutedEventArgs e)
+    private void MenuItem_OnClick(object _, RoutedEventArgs _2)
     {
         HandleExceptionsWithMessageBox(() =>
         {
