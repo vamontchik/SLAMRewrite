@@ -72,7 +72,7 @@
             SelectionChanged="AudioTracks_OnSelectionChanged">
             <ListView.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Header="Copy Selected File Name" Click="MenuItem_OnClick"></MenuItem>
+                    <MenuItem Header="Copy Now Playing Song Name" Click="MenuItem_OnClick"></MenuItem>
                 </ContextMenu>
             </ListView.ContextMenu>
         </ListView>
