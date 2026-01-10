@@ -1,4 +1,4 @@
-﻿namespace SLAMRewrite.DataObjects;
+﻿namespace SLAMRewrite;
 
 public enum SongStatus
 {
