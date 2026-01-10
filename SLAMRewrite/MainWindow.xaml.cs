@@ -13,7 +13,6 @@ namespace SLAMRewrite;
 /// </summary>
 public partial class MainWindow : Window, INotifyPropertyChanged
 {
-    private readonly Dictionary<string, AudioFileInfo> _audioTracksDictionary = [];
     private string? _selectedTrack;
     private readonly int _outputToGameMicDeviceNumber;
     private readonly int _outputToDefaultDeviceNumber;
@@ -76,13 +75,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             if (hitOk is null || !hitOk.Value)
                 return;
 
-            var fullFilePath = openFileDialog.FileName;
-            var onlyFileName = openFileDialog.SafeFileName;
-
-            _audioTracksDictionary[onlyFileName] = new AudioFileInfo(
-                FileName: onlyFileName,
-                FullFilePath: fullFilePath);
-            AudioTracksListView.Items.Add(onlyFileName);
+            var fullPath = openFileDialog.FileName;
+            AudioTracksListView.Items.Add(fullPath);
         });
 
     private void PlayButton_OnClick(object _, RoutedEventArgs _2) =>
@@ -132,10 +126,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         HandleExceptionsWithMessageBox(() =>
         {
             // TODO: working with only first selection here
-            var firstSelection = e.AddedItems[0] as string;
-
-            // TODO: is checking for firstSelection being null necessary
-            _selectedTrack = _audioTracksDictionary[firstSelection!].FullFilePath;
+            var selection = e.AddedItems[0] as string;
+            _selectedTrack = selection;
         });
 
     private static void HandleExceptionsWithMessageBox(Action action)
@@ -242,6 +234,18 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
             _audioFileReaderForGameMic = null;
             _audioFileReaderForDefault = null;
+        });
+    }
+
+    private void MenuItem_OnClick(object sender, RoutedEventArgs e)
+    {
+        HandleExceptionsWithMessageBox(() =>
+        {
+            if (_selectedTrack is null)
+                return;
+
+            var fileNameOnly = System.IO.Path.GetFileName(_selectedTrack);
+            Clipboard.SetText(fileNameOnly);
         });
     }
 }
