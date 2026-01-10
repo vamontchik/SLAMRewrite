@@ -31,9 +31,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private string? SelectedTrack { get; set; } = null;
 
-    private string? PrettySelectedTrack =>
-        SelectedTrack is null ? null : System.IO.Path.GetFileNameWithoutExtension(SelectedTrack);
-
     public MainWindow()
     {
         InitializeComponent();
@@ -134,7 +131,11 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private void MenuItem_OnClick(object sender, RoutedEventArgs e)
     {
-        HandleExceptionsWithMessageBox(() => Clipboard.SetText(PrettySelectedTrack ?? string.Empty));
+        HandleExceptionsWithMessageBox(() =>
+        {
+            var onlyFileName = System.IO.Path.GetFileNameWithoutExtension(SelectedTrack ?? string.Empty);
+            Clipboard.SetText(onlyFileName);
+        });
     }
 
     private void OpenAudioStream()
