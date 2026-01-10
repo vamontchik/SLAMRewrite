@@ -74,7 +74,7 @@ public class SimpleAudioDeviceWithDirectVolume(int deviceNumber) : SimpleAudioDe
     {
         var waveOutEvent = new WaveOutEvent { DeviceNumber = deviceNumber };
         waveOutEvent.Init(AudioFileReader);
-        waveOutEvent.Volume = 0.05f;
+        waveOutEvent.Volume = 0.25f;
         return waveOutEvent;
     }
 }
