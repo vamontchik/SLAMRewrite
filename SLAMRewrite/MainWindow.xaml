@@ -62,6 +62,7 @@
             Grid.Row="1"
             Grid.Column="0"
             Grid.ColumnSpan="2"
+            SelectionMode="Single"
             SelectionChanged="AudioTracks_OnSelectionChanged">
             <ListView.ContextMenu>
                 <ContextMenu>

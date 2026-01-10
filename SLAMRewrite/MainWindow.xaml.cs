@@ -125,7 +125,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private void AudioTracks_OnSelectionChanged(object _, SelectionChangedEventArgs e) =>
         HandleExceptionsWithMessageBox(() =>
         {
-            // TODO: working with only first selection here
             var selection = e.AddedItems[0] as string;
             _selectedTrack = selection;
         });
