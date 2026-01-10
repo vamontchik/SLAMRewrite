@@ -2,9 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Win32;
-using SLAMRewrite.DataObjects;
 using NAudio.Wave;
-using NAudio.Wave.SampleProviders;
 
 namespace SLAMRewrite;
 
@@ -13,13 +11,8 @@ namespace SLAMRewrite;
 /// </summary>
 public partial class MainWindow : Window, INotifyPropertyChanged
 {
-    private string? _selectedTrack;
-    private readonly int _outputToGameMicDeviceNumber;
-    private readonly int _outputToDefaultDeviceNumber;
-    private AudioFileReader? _audioFileReaderForGameMic;
-    private AudioFileReader? _audioFileReaderForDefault;
-    private WaveOutEvent? _outputToGameMicDevice;
-    private WaveOutEvent? _outputToDefaultDevice;
+    private readonly SimpleAudioDevice _outputToGame;
+    private readonly SimpleAudioDevice _outputToDefault;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -30,18 +23,26 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         {
             field = value;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SongStatus)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NowPlaying)));
         }
     } = SongStatus.Stopped;
 
+    public string? NowPlaying => System.IO.Path.GetFileNameWithoutExtension(_outputToGame.GetFullPath());
+
+    private string? SelectedTrack { get; set; } = null;
+
+    private string? PrettySelectedTrack =>
+        SelectedTrack is null ? null : System.IO.Path.GetFileNameWithoutExtension(SelectedTrack);
+
     public MainWindow()
     {
-        DataContext = this;
         InitializeComponent();
-        _outputToGameMicDeviceNumber = FindGameMicDeviceNumber();
-        _outputToDefaultDeviceNumber = FindDefaultDeviceNumber();
+        DataContext = this;
+        _outputToGame = new SimpleAudioDeviceWithDirectVolume(FindGameDeviceNumber());
+        _outputToDefault = new SimpleAudioDeviceWithVolumeProvider(FindDefaultDeviceNumber());
     }
 
-    private static int FindGameMicDeviceNumber()
+    private static int FindGameDeviceNumber()
     {
         const string deviceNameSearchString = "CABLE Input";
 
@@ -57,10 +58,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         return -1;
     }
 
-    private static int FindDefaultDeviceNumber()
-    {
-        return 0;
-    }
+    private static int FindDefaultDeviceNumber() => 0;
 
     private void ImportButton_OnClick(object _, RoutedEventArgs _2) =>
         HandleExceptionsWithMessageBox(() =>
@@ -86,13 +84,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             {
                 // load song then play
                 case SongStatus.Stopped:
-                    if (_selectedTrack is not null)
-                    {
-                        OpenAudioStream();
-                        PlayAudioStream();
-                        SongStatus = SongStatus.Playing;
-                    }
-
+                    OpenAudioStream();
+                    PlayAudioStream();
+                    SongStatus = SongStatus.Playing;
                     break;
 
                 // play paused song
@@ -126,8 +120,72 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         HandleExceptionsWithMessageBox(() =>
         {
             var selection = e.AddedItems[0] as string;
-            _selectedTrack = selection;
+            SelectedTrack = selection;
         });
+
+    private void StopFlushButton_OnClick(object _, RoutedEventArgs _2)
+    {
+        HandleExceptionsWithMessageBox(() =>
+        {
+            StopAudioStream();
+            SongStatus = SongStatus.Stopped;
+        });
+    }
+
+    private void MenuItem_OnClick(object sender, RoutedEventArgs e)
+    {
+        HandleExceptionsWithMessageBox(() => Clipboard.SetText(PrettySelectedTrack ?? string.Empty));
+    }
+
+    private void OpenAudioStream()
+    {
+        if (SelectedTrack is null)
+            return;
+
+        if (!_outputToGame.IsOpened)
+            _outputToGame.Open(SelectedTrack);
+
+        if (!_outputToDefault.IsOpened)
+            _outputToDefault.Open(SelectedTrack);
+    }
+
+    private void PlayAudioStream()
+    {
+        if (_outputToGame.IsPlaying || _outputToDefault.IsPlaying)
+            return;
+
+        _outputToGame.Play();
+        _outputToDefault.Play();
+
+        _outputToGame.PlaybackStopped += OnPlaybackStopped;
+        _outputToDefault.PlaybackStopped += OnPlaybackStopped;
+    }
+
+    private void PauseAudioStream()
+    {
+        if (SelectedTrack is null)
+            return;
+
+        if (_outputToGame.IsPaused || _outputToDefault.IsPaused)
+            return;
+
+        _outputToGame.Pause();
+        _outputToDefault.Pause();
+    }
+
+    private void StopAudioStream()
+    {
+        _outputToGame.Close();
+        _outputToDefault.Close();
+
+        _outputToGame.PlaybackStopped -= OnPlaybackStopped;
+        _outputToDefault.PlaybackStopped -= OnPlaybackStopped;
+    }
+
+    private void OnPlaybackStopped(object? _, EventArgs _2)
+    {
+        SongStatus = SongStatus.Stopped;
+    }
 
     private static void HandleExceptionsWithMessageBox(Action action)
     {
@@ -143,108 +201,5 @@ public partial class MainWindow : Window, INotifyPropertyChanged
                 button: MessageBoxButton.OK,
                 icon: MessageBoxImage.Error);
         }
-    }
-
-    private void SkipToNextButton_OnClick(object _, RoutedEventArgs _2)
-    {
-        HandleExceptionsWithMessageBox(() =>
-        {
-            StopAudioStream();
-            SongStatus = SongStatus.Stopped;
-        });
-    }
-
-    private void OpenAudioStream()
-    {
-        HandleExceptionsWithMessageBox(() =>
-        {
-            if (_audioFileReaderForGameMic is not null)
-                return;
-
-            _audioFileReaderForGameMic = new AudioFileReader(_selectedTrack);
-            _audioFileReaderForDefault = new AudioFileReader(_selectedTrack);
-        });
-    }
-
-    private void PlayAudioStream()
-    {
-        HandleExceptionsWithMessageBox(() =>
-        {
-            if (_audioFileReaderForGameMic is null)
-                return;
-
-            if (_outputToGameMicDevice is null)
-            {
-                _outputToGameMicDevice = new WaveOutEvent { DeviceNumber = _outputToGameMicDeviceNumber };
-                _outputToGameMicDevice.Init(_audioFileReaderForGameMic);
-                _outputToGameMicDevice.Volume = 0.05f;
-
-                _outputToDefaultDevice = new WaveOutEvent { DeviceNumber = _outputToDefaultDeviceNumber };
-                var volumeProvider = new VolumeSampleProvider(_audioFileReaderForDefault.ToSampleProvider())
-                {
-                    Volume = 0.25f
-                };
-                _outputToDefaultDevice.Init(volumeProvider);
-
-                _outputToGameMicDevice.PlaybackStopped += (_, _) =>
-                {
-                    StopAudioStream();
-                    SongStatus = SongStatus.Stopped;
-                };
-                _outputToDefaultDevice.PlaybackStopped += (_, _) =>
-                {
-                    StopAudioStream();
-                    SongStatus = SongStatus.Stopped;
-                };
-            }
-
-            _outputToGameMicDevice.Play();
-            _outputToDefaultDevice!.Play();
-        });
-    }
-
-    private void PauseAudioStream()
-    {
-        HandleExceptionsWithMessageBox(() =>
-        {
-            if (_outputToGameMicDevice is null)
-                return;
-
-            _outputToGameMicDevice.Pause();
-            _outputToDefaultDevice!.Pause();
-        });
-    }
-
-    private void StopAudioStream()
-    {
-        HandleExceptionsWithMessageBox(() =>
-        {
-            _outputToGameMicDevice?.Stop();
-            _outputToGameMicDevice?.Dispose();
-
-            _outputToDefaultDevice?.Stop();
-            _outputToDefaultDevice?.Dispose();
-
-            _audioFileReaderForGameMic?.Dispose();
-            _audioFileReaderForDefault?.Dispose();
-
-            _outputToGameMicDevice = null;
-            _outputToDefaultDevice = null;
-
-            _audioFileReaderForGameMic = null;
-            _audioFileReaderForDefault = null;
-        });
-    }
-
-    private void MenuItem_OnClick(object sender, RoutedEventArgs e)
-    {
-        HandleExceptionsWithMessageBox(() =>
-        {
-            if (_selectedTrack is null)
-                return;
-
-            var fileNameOnly = System.IO.Path.GetFileName(_selectedTrack);
-            Clipboard.SetText(fileNameOnly);
-        });
     }
 }

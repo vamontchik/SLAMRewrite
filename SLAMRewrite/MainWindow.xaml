@@ -43,20 +43,26 @@
                 Height="50"
                 Click="PauseButton_OnClick" />
             <Button
-                Name="SkipToNextButton"
-                Content="SkipToNext"
+                Name="StopFlushButton"
+                Content="Stop/Flush"
                 Width="100"
                 Height="50"
-                Click="SkipToNextButton_OnClick" />
+                Click="StopFlushButton_OnClick" />
         </WrapPanel>
         <TextBlock
             Name="StatusTextBlock"
             Grid.Row="0"
             Grid.Column="0"
-            Text="{Binding SongStatus, StringFormat=Status: {0}}"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            FontSize="16" />
+            FontSize="16">
+            <TextBlock.Text>
+                <MultiBinding StringFormat="{}Status: {0}&#x0a;Now Playing: {1}">
+                    <Binding Path="SongStatus" />
+                    <Binding Path="NowPlaying" />
+                </MultiBinding>
+            </TextBlock.Text>
+        </TextBlock>
         <ListView
             Name="AudioTracksListView"
             Grid.Row="1"
