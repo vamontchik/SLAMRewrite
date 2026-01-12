@@ -175,8 +175,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private void StopAudioStream()
     {
-        _outputToGame.Close();
         _outputToGame.PlaybackStopped -= OnPlaybackStopped;
+        _outputToGame.Close();
     }
 
     private void OnPlaybackStopped(object? _, EventArgs _2)
