@@ -12,7 +12,6 @@ namespace SLAMRewrite;
 public partial class MainWindow : Window, INotifyPropertyChanged
 {
     private readonly SimpleAudioDevice _outputToGame;
-    private readonly SimpleAudioDevice _outputToDefault;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -36,7 +35,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         InitializeComponent();
         DataContext = this;
         _outputToGame = new SimpleAudioDeviceWithVolumeProvider(FindGameDeviceNumber(), defaultVolume: 0.1f);
-        _outputToDefault = new SimpleAudioDeviceWithVolumeProvider(FindDefaultDeviceNumber(), defaultVolume: 0.25f);
     }
 
     private static int FindGameDeviceNumber()
@@ -54,8 +52,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
         return -1;
     }
-
-    private static int FindDefaultDeviceNumber() => 0;
 
     private void AudioTracks_OnSelectionChanged(object _, SelectionChangedEventArgs e) =>
         HandleExceptionsWithMessageBox(() =>
@@ -104,7 +100,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
                 // load song then play
                 case SongStatus.Stopped:
                     OpenAudioStream();
-                    if (!_outputToGame.IsOpened || !_outputToDefault.IsOpened)
+                    if (!_outputToGame.IsOpened)
                         break;
                     PlayAudioStream();
                     SongStatus = SongStatus.Playing;
@@ -164,33 +160,23 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
         if (!_outputToGame.IsOpened)
             _outputToGame.Open(SelectedTrack);
-
-        if (!_outputToDefault.IsOpened)
-            _outputToDefault.Open(SelectedTrack);
     }
 
     private void PlayAudioStream()
     {
         _outputToGame.Play();
-        _outputToDefault.Play();
-
         _outputToGame.PlaybackStopped += OnPlaybackStopped;
-        _outputToDefault.PlaybackStopped += OnPlaybackStopped;
     }
 
     private void PauseAudioStream()
     {
         _outputToGame.Pause();
-        _outputToDefault.Pause();
     }
 
     private void StopAudioStream()
     {
         _outputToGame.Close();
-        _outputToDefault.Close();
-
         _outputToGame.PlaybackStopped -= OnPlaybackStopped;
-        _outputToDefault.PlaybackStopped -= OnPlaybackStopped;
     }
 
     private void OnPlaybackStopped(object? _, EventArgs _2)

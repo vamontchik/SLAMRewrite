@@ -68,17 +68,6 @@ public abstract class SimpleAudioDevice
     }
 }
 
-public class SimpleAudioDeviceWithDirectVolume(int deviceNumber, float defaultVolume) : SimpleAudioDevice
-{
-    protected override WaveOutEvent CreateWaveEvent()
-    {
-        var waveOutEvent = new WaveOutEvent { DeviceNumber = deviceNumber };
-        waveOutEvent.Init(AudioFileReader);
-        waveOutEvent.Volume = defaultVolume;
-        return waveOutEvent;
-    }
-}
-
 public class SimpleAudioDeviceWithVolumeProvider(int deviceNumber, float defaultVolume) : SimpleAudioDevice
 {
     protected override WaveOutEvent CreateWaveEvent()
