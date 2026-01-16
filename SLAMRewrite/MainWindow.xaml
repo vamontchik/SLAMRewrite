@@ -43,7 +43,7 @@
                 Name="WrapPanelForPlayPauseStop">
                 <Button
                     Name="PlayButton"
-                    Content="Play"
+                    Content="Play/Resume"
                     Width="100"
                     Height="50"
                     Click="PlayButton_OnClick" />
