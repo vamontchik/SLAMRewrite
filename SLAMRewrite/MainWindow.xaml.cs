@@ -86,6 +86,14 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             if (SelectedTrack is null)
                 return;
 
+            var result = MessageBox.Show(
+                messageBoxText: $"Are you sure you want to delete {SelectedTrack}?",
+                caption: "Confirmation",
+                button: MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+            if (result == MessageBoxResult.No)
+                return;
+
             AudioTracksListView.Items.Remove(SelectedTrack);
             SelectedTrack = null;
         });
