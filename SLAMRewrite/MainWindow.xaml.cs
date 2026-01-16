@@ -80,8 +80,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             AudioTracksListView.Items.Add(fullPath);
         });
 
-    private void DeleteButton_OnClick(object _, RoutedEventArgs _2)
-    {
+    private void DeleteButton_OnClick(object _, RoutedEventArgs _2) =>
         HandleExceptionsWithMessageBox(() =>
         {
             if (SelectedTrack is null)
@@ -90,7 +89,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             AudioTracksListView.Items.Remove(SelectedTrack);
             SelectedTrack = null;
         });
-    }
 
     private void PlayButton_OnClick(object _, RoutedEventArgs _2) =>
         HandleExceptionsWithMessageBox(() =>
@@ -133,8 +131,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             SongStatus = SongStatus.Paused;
         });
 
-    private void StopFlushButton_OnClick(object _, RoutedEventArgs _2)
-    {
+    private void StopFlushButton_OnClick(object _, RoutedEventArgs _2) =>
         HandleExceptionsWithMessageBox(() =>
         {
             if (SongStatus is SongStatus.Stopped)
@@ -142,16 +139,13 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             StopAudioStream();
             SongStatus = SongStatus.Stopped;
         });
-    }
 
-    private void MenuItem_OnClick(object _, RoutedEventArgs _2)
-    {
+    private void MenuItem_OnClick(object _, RoutedEventArgs _2) =>
         HandleExceptionsWithMessageBox(() =>
         {
             var onlyFileName = System.IO.Path.GetFileNameWithoutExtension(SelectedTrack ?? string.Empty);
             Clipboard.SetText(onlyFileName);
         });
-    }
 
     private void OpenAudioStream()
     {
