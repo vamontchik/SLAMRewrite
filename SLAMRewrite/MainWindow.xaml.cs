@@ -90,7 +90,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
                 messageBoxText: $"Are you sure you want to delete {SelectedTrack}?",
                 caption: "Confirmation",
                 button: MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
+                icon: MessageBoxImage.Question);
             if (result == MessageBoxResult.No)
                 return;
 
