@@ -53,7 +53,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         return -1;
     }
 
-    private void AudioTracks_OnSelectionChanged(object _, SelectionChangedEventArgs e) =>
+    private void AudioTracksListView_OnSelectionChanged(object _, SelectionChangedEventArgs e) =>
         HandleExceptionsWithMessageBox(() =>
         {
             if (e.AddedItems.Count != 1)
@@ -63,7 +63,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             SelectedTrack = selection;
         });
 
-    private void AddSong_OnClick(object _, RoutedEventArgs _2) =>
+    private void AddSong_OnItemClick(object _, RoutedEventArgs _2) =>
         HandleExceptionsWithMessageBox(() =>
         {
             var openFileDialog = new OpenFileDialog
@@ -80,7 +80,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             AudioTracksListView.Items.Add(fullPath);
         });
 
-    private void DeleteSong_OnClick(object _, RoutedEventArgs _2) =>
+    private void DeleteSong_OnItemClick(object _, RoutedEventArgs _2) =>
         HandleExceptionsWithMessageBox(() =>
         {
             if (SelectedTrack is null)
@@ -101,33 +101,10 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private void PlayButton_OnClick(object _, RoutedEventArgs _2) =>
         HandleExceptionsWithMessageBox(() =>
         {
-            switch (SongStatus)
-            {
-                // load song then play
-                case SongStatus.Stopped:
-                    OpenAudioStream();
-                    if (!_outputToGame.IsOpened)
-                        break;
-                    PlayAudioStream();
-                    SongStatus = SongStatus.Playing;
-                    break;
-
-                // play paused song
-                case SongStatus.Paused:
-                    PlayAudioStream();
-                    SongStatus = SongStatus.Playing;
-                    break;
-
-                // ignore input if already playing
-                case SongStatus.Playing:
-                    break;
-
-                default:
-                    throw new ArgumentOutOfRangeException(
-                        nameof(SongStatus),
-                        SongStatus,
-                        "Check cases on SongStatus");
-            }
+            OpenAudioStream();
+            if (_outputToGame.IsOpened)
+                PlayAudioStream();
+            SongStatus = SongStatus.Playing;
         });
 
     private void PauseButton_OnClick(object _, RoutedEventArgs _2) =>
@@ -153,8 +130,10 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         if (SelectedTrack is null)
             return;
 
-        if (!_outputToGame.IsOpened)
-            _outputToGame.Open(SelectedTrack);
+        if (_outputToGame.IsOpened)
+            _outputToGame.Close();
+
+        _outputToGame.Open(SelectedTrack);
     }
 
     private void PlayAudioStream()

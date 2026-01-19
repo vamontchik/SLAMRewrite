@@ -28,19 +28,19 @@
                 Name="WrapPanelForPlayPauseStop">
                 <Button
                     Name="PlayButton"
-                    Content="Play/Resume"
+                    Content="▶️"
                     Width="100"
                     Height="50"
                     Click="PlayButton_OnClick" />
                 <Button
                     Name="PauseButton"
-                    Content="Pause"
+                    Content="⏸️"
                     Width="100"
                     Height="50"
                     Click="PauseButton_OnClick" />
                 <Button
                     Name="StopFlushButton"
-                    Content="Stop/Flush"
+                    Content="⏹️"
                     Width="100"
                     Height="50"
                     Click="StopFlushButton_OnClick" />
@@ -67,11 +67,11 @@
             Grid.Column="0"
             Grid.ColumnSpan="2"
             SelectionMode="Single"
-            SelectionChanged="AudioTracks_OnSelectionChanged">
+            SelectionChanged="AudioTracksListView_OnSelectionChanged">
             <ListView.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Header="Add Song" Click="AddSong_OnClick" />
-                    <MenuItem Header="Delete Song" Click="DeleteSong_OnClick" />
+                    <MenuItem Header="Add Song" Click="AddSong_OnItemClick" />
+                    <MenuItem Header="Delete Song" Click="DeleteSong_OnItemClick" />
                 </ContextMenu>
             </ListView.ContextMenu>
         </ListView>
