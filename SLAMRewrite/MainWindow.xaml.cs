@@ -102,8 +102,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         HandleExceptionsWithMessageBox(() =>
         {
             OpenAudioStream();
-            if (_outputToGame.IsOpened)
-                PlayAudioStream();
+            if (!_outputToGame.IsOpened)
+                return;
+            PlayAudioStream();
             SongStatus = SongStatus.Playing;
         });
 
