@@ -10,12 +10,11 @@ public abstract class SimpleAudioDevice
 
     public bool IsOpened => AudioFileReader is not null;
 
-    public bool IsPlaying => _waveOutEvent is not null && !IsPaused;
-
-    // Should be 'false' when no audio is playing. Default value of 'false'.
-    public bool IsPaused { get; private set; } = false;
-
-    public event EventHandler PlaybackStopped = delegate { };
+    public bool IsPlaying => IsOpened &&
+                             _waveOutEvent?.PlaybackState is PlaybackState.Playing;
+    
+    public bool IsPaused => IsOpened &&
+                            _waveOutEvent?.PlaybackState is PlaybackState.Paused;
 
     public void Open(string? fullFilePath)
     {
@@ -26,26 +25,30 @@ public abstract class SimpleAudioDevice
 
     public void Play()
     {
-        // aka !IsOpened, but null check is better so compiler sees AudioFileReader as non-null
+        // Open() must be called first
         if (AudioFileReader is null)
             return;
 
-        _waveOutEvent ??= CreateWaveEvent();
-
-        _waveOutEvent.PlaybackStopped += OnPlaybackStopped;
+        if (_waveOutEvent is null)
+        {
+            _waveOutEvent ??= CreateWaveEvent();
+            _waveOutEvent.PlaybackStopped += OnPlaybackStopped;
+        }
 
         _waveOutEvent.Play();
-
-        IsPaused = false;
     }
 
     protected abstract WaveOutEvent CreateWaveEvent();
 
     public void Pause()
     {
-        _waveOutEvent?.Pause();
+        if (_waveOutEvent is null)
+            return;
 
-        IsPaused = true;
+        if (_waveOutEvent.PlaybackState is PlaybackState.Paused)
+            return;
+
+        _waveOutEvent.Pause();
     }
 
     public void Close()
@@ -57,8 +60,6 @@ public abstract class SimpleAudioDevice
 
         AudioFileReader?.Dispose();
         AudioFileReader = null;
-
-        IsPaused = false; // reset to initial value
     }
 
     public string? GetFullPath() => AudioFileReader?.FileName;
@@ -66,8 +67,10 @@ public abstract class SimpleAudioDevice
     private void OnPlaybackStopped(object? sender, EventArgs e)
     {
         Close();
-        PlaybackStopped(this, EventArgs.Empty);
+        PlaybackStopped(sender, e);
     }
+
+    public event EventHandler PlaybackStopped = delegate { };
 }
 
 public class SimpleAudioDeviceWithVolumeProvider(int deviceNumber, float defaultVolume) : SimpleAudioDevice

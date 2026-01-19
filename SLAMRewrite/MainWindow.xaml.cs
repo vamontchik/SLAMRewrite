@@ -17,14 +17,17 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     public SongStatus SongStatus
     {
-        get;
-        set
+        get
         {
-            field = value;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SongStatus)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NowPlaying)));
+            if (_outputToGame.IsPaused)
+                return SongStatus.Paused;
+
+            if (_outputToGame.IsPlaying)
+                return SongStatus.Playing;
+
+            return SongStatus.Stopped;
         }
-    } = SongStatus.Stopped;
+    }
 
     public string? NowPlaying => System.IO.Path.GetFileNameWithoutExtension(_outputToGame.GetFullPath());
 
@@ -102,64 +105,32 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         HandleExceptionsWithMessageBoxWithFinally(
             tryAction: () =>
             {
-                if (SongStatus is not SongStatus.Paused)
-                    OpenAudioStream();
-                PlayAudioStream();
-                SongStatus = SongStatus.Playing;
+                var selectedSameTrack = _outputToGame.GetFullPath()?.Equals(SelectedTrack) ?? false;
+                if (!_outputToGame.IsPaused && !selectedSameTrack)
+                {
+                    _outputToGame.PlaybackStopped -= OnPlaybackStopped;
+                    _outputToGame.Close();
+                    _outputToGame.Open(SelectedTrack);
+                    _outputToGame.PlaybackStopped += OnPlaybackStopped;
+                }
+
+                _outputToGame.Play();
             },
-            finallyAction: () =>
-            {
-                if (!_outputToGame.IsPlaying)
-                    SongStatus = SongStatus.Stopped;
-            });
+            finallyAction: FireStatusPropertiesChanged);
 
     private void PauseButton_OnClick(object _, RoutedEventArgs _2) =>
-        HandleExceptionsWithMessageBox(() =>
-        {
-            if (SongStatus is not SongStatus.Playing)
-                return;
-            PauseAudioStream();
-            SongStatus = SongStatus.Paused;
-        });
+        HandleExceptionsWithMessageBoxWithFinally(
+            tryAction: () => _outputToGame.Pause(),
+            finallyAction: FireStatusPropertiesChanged);
 
     private void StopFlushButton_OnClick(object _, RoutedEventArgs _2) =>
-        HandleExceptionsWithMessageBox(() =>
-        {
-            if (SongStatus is SongStatus.Stopped)
-                return;
-            StopAudioStream();
-            SongStatus = SongStatus.Stopped;
-        });
-
-    private void OpenAudioStream()
-    {
-        if (_outputToGame.IsOpened)
-            _outputToGame.Close();
-
-        _outputToGame.Open(SelectedTrack);
-    }
-
-    private void PlayAudioStream()
-    {
-        _outputToGame.Play();
-        _outputToGame.PlaybackStopped += OnPlaybackStopped;
-    }
-
-    private void PauseAudioStream()
-    {
-        _outputToGame.Pause();
-    }
-
-    private void StopAudioStream()
-    {
-        _outputToGame.PlaybackStopped -= OnPlaybackStopped;
-        _outputToGame.Close();
-    }
-
-    private void OnPlaybackStopped(object? _, EventArgs _2)
-    {
-        SongStatus = SongStatus.Stopped;
-    }
+        HandleExceptionsWithMessageBoxWithFinally(
+            tryAction: () =>
+            {
+                _outputToGame.PlaybackStopped -= OnPlaybackStopped;
+                _outputToGame.Close();
+            },
+            finallyAction: FireStatusPropertiesChanged);
 
     private static void HandleExceptionsWithMessageBox(Action action)
     {
@@ -196,4 +167,12 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             finallyAction();
         }
     }
+
+    private void FireStatusPropertiesChanged()
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SongStatus)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NowPlaying)));
+    }
+
+    private void OnPlaybackStopped(object? o, EventArgs eventArgs) => FireStatusPropertiesChanged();
 }
