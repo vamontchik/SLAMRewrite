@@ -19,6 +19,8 @@ public abstract class SimpleAudioDevice
 
     public void Open(string fullFilePath)
     {
+        if (string.IsNullOrEmpty(fullFilePath))
+            throw new Exception($"Invalid file path: {fullFilePath}");
         AudioFileReader = new AudioFileReader(fullFilePath);
     }
 
