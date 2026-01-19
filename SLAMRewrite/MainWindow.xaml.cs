@@ -87,7 +87,14 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         HandleExceptionsWithMessageBox(() =>
         {
             if (SelectedTrack is null)
+            {
+                var __ = MessageBox.Show(
+                    messageBoxText: "No selected track to delete.",
+                    caption: "Error",
+                    button: MessageBoxButton.OK,
+                    icon: MessageBoxImage.Error);
                 return;
+            }
 
             var result = MessageBox.Show(
                 messageBoxText: $"Are you sure you want to delete \'{SelectedTrack}\'?",
