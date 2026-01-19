@@ -101,7 +101,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private void PlayButton_OnClick(object _, RoutedEventArgs _2) =>
         HandleExceptionsWithMessageBox(() =>
         {
-            if (!_outputToGame.IsPaused)
+            if (SongStatus is not SongStatus.Paused)
             {
                 OpenAudioStream();
                 if (!_outputToGame.IsOpened)
@@ -131,9 +131,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private void OpenAudioStream()
     {
-        if (SelectedTrack is null)
-            return;
-
         if (_outputToGame.IsOpened)
             _outputToGame.Close();
 

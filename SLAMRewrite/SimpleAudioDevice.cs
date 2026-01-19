@@ -17,10 +17,10 @@ public abstract class SimpleAudioDevice
 
     public event EventHandler PlaybackStopped = delegate { };
 
-    public void Open(string fullFilePath)
+    public void Open(string? fullFilePath)
     {
         if (string.IsNullOrEmpty(fullFilePath))
-            throw new Exception($"Invalid file path: {fullFilePath}");
+            throw new Exception($"Invalid file path. Did you select a track?");
         AudioFileReader = new AudioFileReader(fullFilePath);
     }
 
