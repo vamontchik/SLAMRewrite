@@ -99,17 +99,19 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         });
 
     private void PlayButton_OnClick(object _, RoutedEventArgs _2) =>
-        HandleExceptionsWithMessageBox(() =>
-        {
-            if (SongStatus is not SongStatus.Paused)
+        HandleExceptionsWithMessageBoxWithFinally(
+            tryAction: () =>
             {
-                OpenAudioStream();
-                if (!_outputToGame.IsOpened)
-                    throw new Exception("Could not open audio stream!");
-            }
-            PlayAudioStream();
-            SongStatus = SongStatus.Playing;
-        });
+                if (SongStatus is not SongStatus.Paused)
+                    OpenAudioStream();
+                PlayAudioStream();
+                SongStatus = SongStatus.Playing;
+            },
+            finallyAction: () =>
+            {
+                if (!_outputToGame.IsPlaying)
+                    SongStatus = SongStatus.Stopped;
+            });
 
     private void PauseButton_OnClick(object _, RoutedEventArgs _2) =>
         HandleExceptionsWithMessageBox(() =>
@@ -172,6 +174,26 @@ public partial class MainWindow : Window, INotifyPropertyChanged
                 caption: "Something went wrong...",
                 button: MessageBoxButton.OK,
                 icon: MessageBoxImage.Error);
+        }
+    }
+
+    private static void HandleExceptionsWithMessageBoxWithFinally(Action tryAction, Action finallyAction)
+    {
+        try
+        {
+            tryAction();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                messageBoxText: ex.Message,
+                caption: "Something went wrong...",
+                button: MessageBoxButton.OK,
+                icon: MessageBoxImage.Error);
+        }
+        finally
+        {
+            finallyAction();
         }
     }
 }

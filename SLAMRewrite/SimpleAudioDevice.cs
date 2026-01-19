@@ -20,7 +20,7 @@ public abstract class SimpleAudioDevice
     public void Open(string? fullFilePath)
     {
         if (string.IsNullOrEmpty(fullFilePath))
-            throw new Exception($"Invalid file path. Did you select a track?");
+            throw new Exception("Invalid file path. Did you select a track?");
         AudioFileReader = new AudioFileReader(fullFilePath);
     }
 
