@@ -25,21 +25,6 @@
             VerticalAlignment="Center"
             HorizontalAlignment="Center">
             <WrapPanel
-                Name="WrapPanelForImportDelete">
-                <Button
-                    Name="ImportButton"
-                    Content="Add"
-                    Width="100"
-                    Height="50"
-                    Click="ImportButton_OnClick" />
-                <Button
-                    Name="DeleteButton"
-                    Content="Delete"
-                    Width="100"
-                    Height="50"
-                    Click="DeleteButton_OnClick" />
-            </WrapPanel>
-            <WrapPanel
                 Name="WrapPanelForPlayPauseStop">
                 <Button
                     Name="PlayButton"
@@ -85,7 +70,8 @@
             SelectionChanged="AudioTracks_OnSelectionChanged">
             <ListView.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Header="Copy Selected Song Name" Click="MenuItem_OnClick"></MenuItem>
+                    <MenuItem Header="Add Song" Click="AddSong_OnClick" />
+                    <MenuItem Header="Delete Song" Click="DeleteSong_OnClick" />
                 </ContextMenu>
             </ListView.ContextMenu>
         </ListView>
