@@ -12,7 +12,7 @@ public abstract class SimpleAudioDevice
 
     public bool IsPlaying => _waveOutEvent is not null && !IsPaused;
 
-    // IsPaused represents whether a call to Pause() without a Play() following up has happened
+    // Should be 'false' when no audio is playing. Default value of 'false'.
     public bool IsPaused { get; private set; } = false;
 
     public event EventHandler PlaybackStopped = delegate { };
@@ -51,7 +51,7 @@ public abstract class SimpleAudioDevice
     public void Close()
     {
         _waveOutEvent?.PlaybackStopped -= OnPlaybackStopped;
-        
+
         _waveOutEvent?.Dispose();
         _waveOutEvent = null;
 
