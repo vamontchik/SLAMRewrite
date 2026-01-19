@@ -90,7 +90,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
                 return;
 
             var result = MessageBox.Show(
-                messageBoxText: $"Are you sure you want to delete {SelectedTrack}?",
+                messageBoxText: $"Are you sure you want to delete \'{SelectedTrack}\'?",
                 caption: "Confirmation",
                 button: MessageBoxButton.YesNo,
                 icon: MessageBoxImage.Question);
@@ -105,8 +105,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         HandleExceptionsWithMessageBoxWithFinally(
             tryAction: () =>
             {
-                var selectedSameTrack = _outputToGame.GetFullPath()?.Equals(SelectedTrack) ?? false;
-                if (!_outputToGame.IsPaused && !selectedSameTrack)
+                if (!_outputToGame.IsPaused && !SelectedCurrentlyPlayingTrack())
                 {
                     _outputToGame.PlaybackStopped -= OnPlaybackStopped;
                     _outputToGame.Close();
@@ -175,4 +174,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     }
 
     private void OnPlaybackStopped(object? o, EventArgs eventArgs) => FireStatusPropertiesChanged();
+
+    private bool SelectedCurrentlyPlayingTrack() => _outputToGame.GetFullPath()?.Equals(SelectedTrack) ?? false;
 }
